@@ -2,6 +2,8 @@
 
 ### Install
 
+First you need to install Redis on your server. Check Redis cocumentation https://redis.io/topics/quickstart
+
 Install dependencies
 ```bash
 $ yarn install
