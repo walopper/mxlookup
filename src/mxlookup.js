@@ -14,7 +14,7 @@ const db = createClient();
  * @param {object} error 
  * @return {object}
  */
-const setResponse = (data, error, source='db') => {
+const setResponse = (data, error, source='cache') => {
     let response = null;
 
     if(error){
