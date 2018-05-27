@@ -14,7 +14,7 @@ const db = createClient();
  * @param {object} error 
  * @return {object}
  */
-const setResponse = (data, error, source='db') => {
+const setResponse = (data, error, source='cache') => {
     let response = null;
 
     if(error){
@@ -23,11 +23,11 @@ const setResponse = (data, error, source='db') => {
     }
 
     if(Array.isArray(data)){
-        response = data.length ? {mx: true, server: data, source} : {mx: false};
+        response = data.length ? {mx: 'mx', server: data, source} : {mx: 'nomx'};
         return JSON.stringify(response);
     }
 
-    return JSON.stringify({mx: false});
+    return JSON.stringify({mx: 'nomx'});
 }
 
 /** fetch MX record from db or DNS if not found on db
@@ -53,7 +53,7 @@ const fetchDB = async (req, res) => {
         .timeout(config.lookupTimeout)
         .end(function (error, data) {
 
-            if(error) data = null;
+            if(error) data = [];
 
             storeInDB(domain, data);
             res.send(setResponse(data, error, 'dns')); // send output to server
@@ -64,9 +64,9 @@ const fetchDB = async (req, res) => {
 }
 
 const storeInDB = (domain, data) => {
-    return data
+    return data && Array.isArray(data)
             ? db.set(domain, JSON.stringify(data), 'EX', config.domainDataExpire)
-            : db.set(domain, null, 'EX', 1)
+            : db.set(domain, [], 'EX', 1)
 }
 
 const mxlookup = (req, res) => {

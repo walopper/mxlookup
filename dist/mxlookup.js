@@ -31,7 +31,7 @@ var db = (0, _thenRedis.createClient)();
  * @return {object}
  */
 var setResponse = function setResponse(data, error) {
-    var source = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'db';
+    var source = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'cache';
 
     var response = null;
 
@@ -41,11 +41,11 @@ var setResponse = function setResponse(data, error) {
     }
 
     if (Array.isArray(data)) {
-        response = data.length ? { mx: true, server: data, source: source } : { mx: false };
+        response = data.length ? { mx: 'mx', server: data, source: source } : { mx: 'nomx' };
         return JSON.stringify(response);
     }
 
-    return JSON.stringify({ mx: false });
+    return JSON.stringify({ mx: 'nomx' });
 };
 
 /** fetch MX record from db or DNS if not found on db
@@ -81,7 +81,7 @@ var fetchDB = function () {
                         //fetch DNS and store new value un db
                         (0, _nslookup2.default)(domain).server(_config2.default.dnsServer).type('mx').timeout(_config2.default.lookupTimeout).end(function (error, data) {
 
-                            if (error) data = null;
+                            if (error) data = [];
 
                             storeInDB(domain, data);
                             res.send(setResponse(data, error, 'dns')); // send output to server
@@ -103,7 +103,7 @@ var fetchDB = function () {
 }();
 
 var storeInDB = function storeInDB(domain, data) {
-    return data ? db.set(domain, JSON.stringify(data), 'EX', _config2.default.domainDataExpire) : db.set(domain, null, 'EX', 1);
+    return data && Array.isArray(data) ? db.set(domain, JSON.stringify(data), 'EX', _config2.default.domainDataExpire) : db.set(domain, [], 'EX', 1);
 };
 
 var mxlookup = function mxlookup(req, res) {
