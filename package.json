@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "babel-watch src/index.js",
-    "start": "./node_modules/forever/bin/forever start dist/index.js",
+    "start": "service redis_6379 start && ./node_modules/forever/bin/forever start dist/index.js",
     "serve": "node dist/index.js",
     "build": "npx babel src --out-dir dist",
     "stop": "./node_modules/forever/bin/forever stopall"
